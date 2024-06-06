@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: mariadb
+    app.kubernetes.io/component: master
+  name: lyanna-mariadb-master
+data:
+  my.cnf: |-
+    [mysqld]
+    skip-name-resolve
+    explicit_defaults_for_timestamp
+    basedir=/data/mariadb
+    port=3306
+    socket=/data/mariadb/tmp/mysql.sock
+    tmpdir=/data/mariadb/tmp
+    max_allowed_packet=16M
+    bind-address=0.0.0.0
+    pid-file=/data/mariadb/tmp/mysqld.pid
+    log-error=/data/mariadb/logs/mysqld.log
+    character-set-server=UTF8
+    collation-server=utf8_general_ci
+
+    [client]
+    port=3306
+    socket=/data/mariadb/tmp/mysql.sock
+    default-character-set=UTF8
+
+    [manager]
+    port=3306
+    socket=/data/mariadb/tmp/mysql.sock
+    pid-file=/data/mariadb/tmp/mysqld.pid
