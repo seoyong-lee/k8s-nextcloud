@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nc-dpy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      containers:
+        - name: nextcloud
+          image: nextcloud:apache
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nc-data
+              mountPath: /var/www/html
+      volumes:
+        - name: nc-data
+          persistentVolumeClaim:
+            claimName: nextcloud-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nc-serv
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 32000
+  selector:
+    app: nextcloud

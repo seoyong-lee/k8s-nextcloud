@@ -1,37 +1,10 @@
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: mariadb-pv
-  labels:
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/data/dbdata"
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mariadb-pv-claim
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mariadb
+  name: db
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: db
@@ -41,14 +14,17 @@ spec:
         app: db
     spec:
       containers:
-        - name: mariadb-container
+        - name: db
           image: mariadb:10.5
+          envFrom:
+            - configMapRef:
+                name: cfg
           ports:
             - containerPort: 3306
-            - name: db
           volumeMounts:
             - name: mariadb-persistent-storage
-            - mountPath: /var/lib/mysql
+              mountPath: /var/lib/mysql
+      restartPolicy: Always
       volumes:
         - name: mariadb-persistent-storage
           persistentVolumeClaim:
@@ -58,11 +34,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mariadb
+  name: db
 spec:
   type: ClusterIP
   ports:
-    - protocol: TCP
-      port: 3306
+    - port: 3306
+      targetPort: 3306
   selector:
     app: db
